@@ -132,7 +132,26 @@
       </div>
     </form>
   </dialog>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyAczJEFvdTYXkSlp1ehWaJj7xDMiLtjLuw",
+    authDomain: "china-trip-2026-2aee7-acc8.firebaseapp.com",
+    projectId: "china-trip-2026-2aee7",
+    storageBucket: "china-trip-2026-2aee7.firebasestorage.app",
+    messagingSenderId: "135533018442",
+    appId: "1:135533018442:web:4ab291db0ad8168a7195b3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.firebaseAuth = getAuth(app);
+  window.firebaseDb = getFirestore(app);
+  window.GoogleAuthProvider = GoogleAuthProvider;
+  window.signInWithPopup = signInWithPopup;
+</script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
