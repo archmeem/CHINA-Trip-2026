@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#143a31" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="China Trip" />
+  <title>China Trip 2026 — Booking Manager</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">CHINA TRIP 2026</div>
+      <h1>Booking Manager</h1>
+      <p>September 5–21, 2026</p>
+    </div>
+    <div class="topmark">中国</div>
+  </header>
+
+  <main>
+    <section id="dashboard" class="view active">
+      <div class="hero">
+        <div>
+          <div class="hero-label">TODAY · CHINA TIME</div>
+          <h2 id="today"></h2>
+          <p>See what opens today, what is still missing, and what comes next.</p>
+        </div>
+        <div class="countdown" id="countdown"></div>
+      </div>
+
+      <div class="progress-card">
+        <div class="progress-head"><strong>Reservation progress</strong><span id="progressText">0%</span></div>
+        <div class="progress-track"><div id="progressBar"></div></div>
+        <div class="progress-foot"><span id="progressBooked">0 booked</span><span id="progressRemaining">0 remaining</span></div>
+      </div>
+
+      <div id="stats" class="stats"></div>
+
+      <div class="section-head">
+        <div><h3>Book Today</h3><p>Booking windows already open and not completed.</p></div>
+        <span class="section-icon">●</span>
+      </div>
+      <div id="bookToday"></div>
+
+      <div class="section-head">
+        <div><h3>Opening Soon</h3><p>Your next reservation windows.</p></div>
+      </div>
+      <div id="soon"></div>
+
+      <div class="section-head">
+        <div><h3>Missing Tickets</h3><p>Booked items without an uploaded ticket or confirmation.</p></div>
+      </div>
+      <div id="missingTickets"></div>
+    </section>
+
+    <section id="timeline" class="view">
+      <div class="page-head"><div><div class="eyebrow">FULL TRIP</div><h2>Trip Timeline</h2><p>English names with smaller Chinese labels.</p></div></div>
+      <div id="timelineList"></div>
+    </section>
+
+    <section id="bookings" class="view">
+      <div class="page-head"><div><div class="eyebrow">RESERVATIONS</div><h2>Bookings</h2><p>Manage status, reminders, prices and confirmations.</p></div></div>
+      <div class="filters">
+        <input id="q" placeholder="Search booking…" />
+        <select id="city"><option value="">All cities</option></select>
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option value="open">Book now</option>
+          <option value="soon">Opening soon</option>
+          <option value="not_open">Not open yet</option>
+          <option value="booked">Booked</option>
+          <option value="confirmed">Confirmed</option>
+        </select>
+      </div>
+      <div id="bookingList"></div>
+    </section>
+
+    <section id="tickets" class="view">
+      <div class="page-head"><div><div class="eyebrow">DOCUMENT WALLET</div><h2>My Tickets</h2><p>PDFs, screenshots, QR codes and booking confirmations.</p></div></div>
+      <div id="ticketList"></div>
+    </section>
+
+    <section id="calendar" class="view">
+      <div class="page-head"><div><div class="eyebrow">DEADLINES</div><h2>Booking Calendar</h2><p>Red = booking opens · Blue = travel/activity.</p></div></div>
+      <div id="calList"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button data-v="dashboard" class="on"><b>⌂</b><span>Today</span></button>
+    <button data-v="timeline"><b>≋</b><span>Timeline</span></button>
+    <button data-v="bookings"><b>✓</b><span>Bookings</span></button>
+    <button data-v="tickets"><b>▣</b><span>Tickets</span></button>
+    <button data-v="calendar"><b>◫</b><span>Calendar</span></button>
+  </nav>
+
+  <dialog id="dlg">
+    <form id="form">
+      <div class="dialog-top">
+        <div><div class="eyebrow" id="dcity"></div><h2 id="dname"></h2><div class="zh" id="dzh"></div></div>
+        <button class="close-btn" type="button" id="close" aria-label="Close">×</button>
+      </div>
+
+      <div class="quick-actions">
+        <button type="button" class="quick primary" id="markBooked">✓ Mark Booked</button>
+        <button type="button" class="quick" id="markConfirmed">✓ Confirmed</button>
+      </div>
+
+      <div class="grid">
+        <label>Status<select id="status"><option value="not_booked">Not booked</option><option value="booked">Booked</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select></label>
+        <label>Final price paid<input id="price" placeholder="e.g. ¥240" /></label>
+        <label>Booking platform<input id="platform" placeholder="12306 / official / Trip…" /></label>
+        <label>Confirmation / order #<input id="confirm" /></label>
+        <label>Seat / slot / room<input id="seat" /></label>
+        <label>Manual booking-open date<input id="openDate" type="date" /></label>
+      </div>
+
+      <label>Notes<textarea id="notes" rows="3"></textarea></label>
+
+      <label class="upload-card">
+        <span><strong>Upload ticket / confirmation</strong><small>PDF, JPG, PNG or screenshot</small></span>
+        <input id="file" type="file" accept=".pdf,image/*" />
+      </label>
+
+      <div class="actions">
+        <button type="button" class="secondary" id="ics">Add Calendar Reminder</button>
+        <button class="primary">Save Changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
