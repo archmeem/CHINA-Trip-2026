@@ -88,6 +88,12 @@
       <div class="page-head"><div><div class="eyebrow">DEADLINES</div><h2>Booking Calendar</h2><p>Red = booking opens · Blue = travel/activity.</p></div></div>
       <div id="calList"></div>
     </section>
+
+    <section id="checklist" class="view">
+      <div id="checklistRoot">
+        <div class="empty">Loading Travel Checklist…</div>
+      </div>
+    </section>
   </main>
 
   <nav class="bottom-nav">
@@ -96,6 +102,7 @@
     <button data-v="bookings"><b>✓</b><span>Bookings</span></button>
     <button data-v="tickets"><b>▣</b><span>Tickets</span></button>
     <button data-v="calendar"><b>◫</b><span>Calendar</span></button>
+    <button data-v="checklist"><b>☑</b><span>Checklist</span></button>
   </nav>
 
   <dialog id="dlg">
@@ -239,5 +246,13 @@
   <script src="data.js"></script>
   <script src="app.js"></script>
   <script src="checklist.js"></script>
+  <script>
+    setTimeout(function(){
+      var root=document.getElementById('checklistRoot');
+      if(root && root.textContent.indexOf('Loading Travel Checklist')!==-1){
+        root.innerHTML='<div class="empty">Travel Checklist could not initialize. Reload once; if this remains, the checklist script is not executing.</div>';
+      }
+    },500);
+  </script>
 </body>
 </html>
