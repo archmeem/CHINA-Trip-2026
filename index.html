@@ -162,19 +162,55 @@
 
   const STATE_KEY = "china-trip-2026-state";
   const stateRef = db.collection("shared").doc("trip-state");
-
-  // Sync local saves to Firestore
   const originalSetItem = localStorage.setItem.bind(localStorage);
+  let applyingCloudState = false;
+  let stopStateListener = null;
+
+  function parseState(value) {
+    try { return JSON.parse(value || "{}"); }
+    catch (err) { return {}; }
+  }
+
+  function itemTime(value) {
+    if (!value || typeof value !== "object" || !value.updatedAt) return 0;
+    const t = Date.parse(value.updatedAt);
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  function mergeTripState(localValue, cloudValue) {
+    const local = parseState(localValue);
+    const cloud = parseState(cloudValue);
+    const merged = {};
+    const keys = new Set([...Object.keys(cloud), ...Object.keys(local)]);
+
+    keys.forEach(key => {
+      const l = local[key];
+      const c = cloud[key];
+      if (l === undefined) { merged[key] = c; return; }
+      if (c === undefined) { merged[key] = l; return; }
+
+      const lt = itemTime(l);
+      const ct = itemTime(c);
+      if (lt || ct) merged[key] = lt > ct ? l : c;
+      else merged[key] = c;
+    });
+
+    return JSON.stringify(merged);
+  }
+
+  async function writeCloudState(value) {
+    if (!auth.currentUser) return;
+    await stateRef.set({
+      value: value,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: auth.currentUser.email
+    }, { merge: true });
+  }
 
   localStorage.setItem = function(key, value) {
     originalSetItem(key, value);
-
-    if (key === STATE_KEY && auth.currentUser) {
-      stateRef.set({
-        value: value,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedBy: auth.currentUser.email
-      });
+    if (key === STATE_KEY && auth.currentUser && !applyingCloudState) {
+      writeCloudState(value).catch(err => console.error("Firebase sync write error:", err));
     }
   };
 
@@ -184,7 +220,6 @@
     const btn = document.createElement("button");
     btn.id = "firebaseLogin";
     btn.textContent = "Sign in to Sync";
-
     btn.style.position = "fixed";
     btn.style.top = "12px";
     btn.style.right = "12px";
@@ -197,18 +232,60 @@
     btn.style.fontWeight = "600";
 
     btn.onclick = async () => {
-      try {
-        await auth.signInWithPopup(provider);
-      } catch (err) {
-        alert("Google sign-in failed: " + err.message);
-      }
+      try { await auth.signInWithPopup(provider); }
+      catch (err) { alert("Google sign-in failed: " + err.message); }
     };
 
     document.body.appendChild(btn);
   }
 
+  async function reconcileInitialState(user) {
+    const snap = await stateRef.get();
+    const localValue = localStorage.getItem(STATE_KEY) || "{}";
+
+    if (!snap.exists || !snap.data().value) {
+      if (localValue !== "{}") await writeCloudState(localValue);
+      return false;
+    }
+
+    const cloudValue = snap.data().value;
+    const mergedValue = mergeTripState(localValue, cloudValue);
+
+    if (mergedValue !== cloudValue) await writeCloudState(mergedValue);
+    if (mergedValue !== localValue) {
+      applyingCloudState = true;
+      originalSetItem(STATE_KEY, mergedValue);
+      applyingCloudState = false;
+      return true;
+    }
+    return false;
+  }
+
+  function startRealtimeStateListener() {
+    if (stopStateListener) stopStateListener();
+    stopStateListener = stateRef.onSnapshot(snap => {
+      if (!snap.exists || !snap.data().value) return;
+
+      const cloudValue = snap.data().value;
+      const localValue = localStorage.getItem(STATE_KEY) || "{}";
+      const mergedValue = mergeTripState(localValue, cloudValue);
+
+      if (mergedValue !== cloudValue && auth.currentUser) {
+        writeCloudState(mergedValue).catch(err => console.error("Firebase merge write error:", err));
+      }
+
+      if (mergedValue !== localValue) {
+        applyingCloudState = true;
+        originalSetItem(STATE_KEY, mergedValue);
+        applyingCloudState = false;
+        location.reload();
+      }
+    }, err => console.error("Firebase realtime sync error:", err));
+  }
+
   auth.onAuthStateChanged(async user => {
     if (!user) {
+      if (stopStateListener) { stopStateListener(); stopStateListener = null; }
       showLoginButton();
       return;
     }
@@ -217,29 +294,15 @@
     if (loginBtn) loginBtn.remove();
 
     try {
-      const snap = await stateRef.get();
-
-      if (snap.exists && snap.data().value) {
-        const cloudValue = snap.data().value;
-        const localValue = localStorage.getItem(STATE_KEY);
-
-        if (cloudValue !== localValue) {
-          originalSetItem(STATE_KEY, cloudValue);
-          location.reload();
-        }
-      } else {
-        const existing = localStorage.getItem(STATE_KEY);
-
-        if (existing) {
-          await stateRef.set({
-            value: existing,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedBy: user.email
-          });
-        }
+      const changed = await reconcileInitialState(user);
+      if (changed) {
+        location.reload();
+        return;
       }
+      startRealtimeStateListener();
     } catch (err) {
       console.error("Firebase sync error:", err);
+      startRealtimeStateListener();
     }
   });
 </script>
