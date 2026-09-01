@@ -3,7 +3,8 @@
     urgent: ['Urgent', 'red', 0],
     before: ['Before Departure', 'amber', 1],
     pack: ['Pack', 'blue', 2],
-    optional: ['Optional', '', 3]
+    optional: ['Optional', '', 3],
+    notnecessary: ['Not Necessary', '', 4]
   };
   const TIMELINE = {
     today: ['Today', 0],
@@ -98,6 +99,12 @@
   function allItems(){ return [...DEFAULTS, ...state().custom].map(merged).filter(x => !x.deleted); }
   function persist(){ save(); renderChecklist(); }
   function esc(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function priorityRank(i){ return (PRIORITY[i.priority] || PRIORITY.notnecessary)[2]; }
+  function itemSort(a,b){
+    const pa=priorityRank(a), pb=priorityRank(b);
+    const ta=(TIMELINE[a.timeline] || TIMELINE.today)[1], tb=(TIMELINE[b.timeline] || TIMELINE.today)[1];
+    return pa-pb || ta-tb || a.title.localeCompare(b.title);
+  }
 
   function injectUI(){
     if (!document.getElementById('checklist')) {
@@ -126,7 +133,7 @@
         <label>Item<input id="clTitle" required maxlength="100"></label>
         <div class="grid">
           <label>Category<select id="clCategory">${CATEGORIES.map(c=>`<option>${c}</option>`).join('')}</select></label>
-          <label>Priority<select id="clPriority"><option value="urgent">Urgent</option><option value="before">Before Departure</option><option value="pack">Pack</option><option value="optional">Optional</option></select></label>
+          <label>Priority<select id="clPriority"><option value="urgent">Urgent</option><option value="before">Before Departure</option><option value="pack">Pack</option><option value="optional">Optional</option><option value="notnecessary">Not Necessary</option></select></label>
           <label>Preparation timeline<select id="clTimeline"><option value="today">Today</option><option value="2-3">2–3 Days Before</option><option value="daybefore">Day Before</option><option value="departure">Departure Day</option></select></label>
           <label>Assigned to<select id="clAssignee"><option>Me</option><option>Faezeh</option><option>Both</option></select></label>
         </div>
@@ -160,7 +167,7 @@
     return allItems().filter(i=>f==='All' || i.assignee===f);
   }
   function itemHTML(i){
-    const p=PRIORITY[i.priority]||PRIORITY.optional, t=TIMELINE[i.timeline]||TIMELINE.today;
+    const p=PRIORITY[i.priority]||PRIORITY.notnecessary, t=TIMELINE[i.timeline]||TIMELINE.today;
     return `<div class="cl-item ${i.done?'done':''}" data-id="${esc(i.id)}">
       <input class="cl-check" type="checkbox" ${i.done?'checked':''} aria-label="Complete ${esc(i.title)}">
       <div><div class="cl-title">${esc(i.title)}</div><div class="cl-tags"><span class="pill ${p[1]}">${p[0]}</span><span class="pill">${t[0]}</span><span class="cl-assignee">${esc(i.assignee)}</span></div></div>
@@ -168,33 +175,30 @@
     </div>`;
   }
   function nextUp(items){
-    return items.filter(i=>!i.done).sort((a,b)=>{
-      const pa=(PRIORITY[a.priority]||PRIORITY.optional)[2], pb=(PRIORITY[b.priority]||PRIORITY.optional)[2];
-      const ta=(TIMELINE[a.timeline]||TIMELINE.today)[1], tb=(TIMELINE[b.timeline]||TIMELINE.today)[1];
-      return pa-pb || ta-tb || a.title.localeCompare(b.title);
-    }).slice(0,5);
+    return items.filter(i=>!i.done && i.priority!=='notnecessary').sort(itemSort).slice(0,5);
   }
 
   function renderChecklist(){
     injectUI();
     const root=document.getElementById('checklistRoot'); if(!root) return;
-    const items=filtered(), all=allItems(), done=all.filter(i=>i.done).length, remaining=all.length-done;
-    const pct=all.length?Math.round(done/all.length*100):0;
-    const urgent=all.filter(i=>!i.done&&i.priority==='urgent').length;
+    const items=filtered(), all=allItems(), active=all.filter(i=>i.priority!=='notnecessary');
+    const done=active.filter(i=>i.done).length, remaining=active.length-done;
+    const pct=active.length?Math.round(done/active.length*100):100;
+    const urgent=active.filter(i=>!i.done&&i.priority==='urgent').length;
     const mode=state().mode||'list';
     const next=nextUp(items);
     let body='';
     if(mode==='list'){
       body=CATEGORIES.map(cat=>{
-        const a=items.filter(i=>i.category===cat); if(!a.length) return '';
+        const a=items.filter(i=>i.category===cat).sort(itemSort); if(!a.length) return '';
         return `<div class="cl-category">${esc(cat)}</div>${a.map(itemHTML).join('')}`;
       }).join('');
-      const other=items.filter(i=>!CATEGORIES.includes(i.category));
+      const other=items.filter(i=>!CATEGORIES.includes(i.category)).sort(itemSort);
       if(other.length) body+=`<div class="cl-category">Other</div>${other.map(itemHTML).join('')}`;
     } else {
       body=Object.entries(TIMELINE).map(([key,v])=>{
         const a=items.filter(i=>i.timeline===key); if(!a.length)return '';
-        return `<div class="cl-timeline-block"><div class="cl-timeline-head">${v[0]}</div>${a.sort((x,y)=>(PRIORITY[x.priority]?.[2]||9)-(PRIORITY[y.priority]?.[2]||9)).map(itemHTML).join('')}</div>`;
+        return `<div class="cl-timeline-block"><div class="cl-timeline-head">${v[0]}</div>${a.sort(itemSort).map(itemHTML).join('')}</div>`;
       }).join('');
     }
     root.innerHTML=`
