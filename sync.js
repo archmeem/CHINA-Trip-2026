@@ -1,12 +1,7 @@
 (function(){
   'use strict';
-
   var STATE_KEY='china-trip-2026-state';
-  var FIREBASE_SCRIPTS=[
-    'https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js',
-    'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js',
-    'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore-compat.js'
-  ];
+  var FIREBASE_SCRIPTS=['https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js','https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js','https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore-compat.js'];
   var firebaseConfig={apiKey:'AIzaSyAczJEFvdTYXkSlp1ehWaJj7xDMiLtjLuw',authDomain:'china-trip-2026-2aee7-acc8.firebaseapp.com',projectId:'china-trip-2026-2aee7',storageBucket:'china-trip-2026-2aee7.firebasestorage.app',messagingSenderId:'135533018442',appId:'1:135533018442:web:4ab291db0ad8168a7195b3'};
   var nativeSetItem=localStorage.setItem.bind(localStorage),applyingCloudState=false,firebaseStarted=false,loadingFirebase=false;
   var auth=null,db=null,provider=null,stateRef=null,stopStateListener=null;
@@ -19,8 +14,8 @@
   function mergeTripState(lv,cv){var local=parse(lv),cloud=parse(cv),merged={},meta={},keys={},k,lm=local.__syncMeta||{},cm=cloud.__syncMeta||{};for(k in local)if(k!=='__syncMeta')keys[k]=1;for(k in cloud)if(k!=='__syncMeta')keys[k]=1;for(k in keys){var l=local[k],c=cloud[k];if(typeof l==='undefined'){merged[k]=c;meta[k]=cm[k]||objectTime(c)||0;continue;}if(typeof c==='undefined'){merged[k]=l;meta[k]=lm[k]||objectTime(l)||0;continue;}var lt=objectTime(l)||Number(lm[k]||0),ct=objectTime(c)||Number(cm[k]||0);if(lt||ct){if(lt>ct){merged[k]=l;meta[k]=lt;}else{merged[k]=c;meta[k]=ct;}}else{merged[k]=c;meta[k]=0;}}merged.__syncMeta=meta;return JSON.stringify(merged);}
   function addSyncBadge(text,kind){var b=document.getElementById('syncStatusBadge');if(!b){b=document.createElement('div');b.id='syncStatusBadge';b.style.cssText='position:fixed;left:12px;top:12px;z-index:9998;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:800;box-shadow:0 3px 12px rgba(0,0,0,.08)';document.body.appendChild(b);}b.textContent=text;if(kind==='ok'){b.style.background='#deece4';b.style.color='#143a31';}else if(kind==='offline'){b.style.background='#f5ead6';b.style.color='#7d5318';}else{b.style.background='#ece8df';b.style.color='#5f675f';}}
   function updateConnectivityBadge(){if(!navigator.onLine)addSyncBadge('Offline · saved on device','offline');else if(auth&&auth.currentUser)addSyncBadge('Synced','ok');else addSyncBadge('Device copy ready','neutral');}
-  function notifyStateChanged(){try{window.dispatchEvent(new CustomEvent('tripstatechange'));}catch(e){}}
-  function applyCloudWithoutReload(value){var current=localStorage.getItem(STATE_KEY)||'{}';if(value===current)return false;applyingCloudState=true;nativeSetItem(STATE_KEY,value);applyingCloudState=false;notifyStateChanged();return true;}
+  function refreshAppState(value){try{S=parse(value);if(typeof all==='function')all();}catch(e){}try{window.dispatchEvent(new CustomEvent('tripstatechange'));}catch(e){}}
+  function applyCloudWithoutReload(value){var current=localStorage.getItem(STATE_KEY)||'{}';if(value===current)return false;applyingCloudState=true;nativeSetItem(STATE_KEY,value);applyingCloudState=false;refreshAppState(value);return true;}
   function loadScript(src){return new Promise(function(resolve,reject){var s=document.createElement('script'),done=false,t=setTimeout(function(){if(done)return;done=true;s.remove();reject(new Error('timeout'));},7000);s.src=src;s.async=true;s.onload=function(){if(done)return;done=true;clearTimeout(t);resolve();};s.onerror=function(){if(done)return;done=true;clearTimeout(t);reject(new Error('blocked'));};document.head.appendChild(s);});}
   function showLoginButton(){if(document.getElementById('firebaseLogin')||!auth)return;var btn=document.createElement('button');btn.id='firebaseLogin';btn.textContent='Sign in to Sync';btn.style.cssText='position:fixed;top:12px;right:12px;z-index:9999;padding:9px 14px;border-radius:20px;border:0;background:#173f36;color:white;font-weight:600';btn.onclick=function(){auth.signInWithPopup(provider).catch(function(err){alert('Google sign-in failed: '+err.message);});};document.body.appendChild(btn);}
   function writeCloudState(value){if(!auth||!auth.currentUser||!stateRef)return Promise.resolve();return stateRef.set({value:value,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email},{merge:true});}
