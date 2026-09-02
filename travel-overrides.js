@@ -1,0 +1,1 @@
+(function(){'use strict';function apply(){(window.ITINERARY||[]).forEach(function(i){if(i.type==='train')i.leaveBuffer=180;if(i.type==='flight')i.leaveBuffer=240;});}apply();window.addEventListener('tripstatechange',apply);})();
