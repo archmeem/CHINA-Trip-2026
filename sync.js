@@ -6,52 +6,16 @@
   var firebaseConfig={apiKey:'AIzaSyAczJEFvdTYXkSlp1ehWaJj7xDMiLtjLuw',authDomain:'china-trip-2026-2aee7-acc8.firebaseapp.com',projectId:'china-trip-2026-2aee7',storageBucket:'china-trip-2026-2aee7.firebasestorage.app',messagingSenderId:'135533018442',appId:'1:135533018442:web:4ab291db0ad8168a7195b3'};
   var nativeSetItem=localStorage.setItem.bind(localStorage),applyingCloudState=false,firebaseStarted=false,loadingFirebase=false;
   var auth=null,db=null,provider=null,stateRef=null,stopStateListener=null;
-  var PROFILES={
-    mehdi:{name:'Mehdi',photo:'profile-mehdi.svg'},
-    faizeh:{name:'Faizeh',photo:'profile-faizeh.svg'}
-  };
-
+  var PROFILES={mehdi:{name:'Mehdi',photo:'profile-mehdi.svg'},faizeh:{name:'Faezeh',photo:'profile-faizeh.svg'}};
   function parse(v){try{return JSON.parse(v||'{}');}catch(e){return {};}}
   function clone(o){try{return JSON.parse(JSON.stringify(o||{}));}catch(e){return {};}}
   function objectTime(v){if(!v||typeof v!=='object'||!v.updatedAt)return 0;var t=Date.parse(v.updatedAt);return isFinite(t)?t:0;}
   function same(a,b){try{return JSON.stringify(a)===JSON.stringify(b);}catch(e){return false;}}
-
-  function ensureProfileStyles(){
-    if(document.getElementById('travelerProfileStyles'))return;
-    var s=document.createElement('style');
-    s.id='travelerProfileStyles';
-    s.textContent='.traveler-profile{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:0 2px 12px}.traveler-profile__photo{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid #143a31;box-shadow:0 4px 14px rgba(20,58,49,.12);background:#fff}.traveler-profile__copy{text-align:right;line-height:1.15}.traveler-profile__hello{font-size:10px;color:#6f776f;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.traveler-profile__name{font-size:17px;font-weight:900;color:#17382f;margin-top:3px}.traveler-profile__button{display:flex;align-items:center;gap:10px;background:transparent;padding:0;border:0;border-radius:999px}.traveler-profile__button:focus-visible{outline:3px solid rgba(20,58,49,.18);outline-offset:4px}@media(max-width:390px){.traveler-profile__photo{width:48px;height:48px}.traveler-profile__name{font-size:16px}}';
-    document.head.appendChild(s);
-  }
-
+  function ensureProfileStyles(){if(document.getElementById('travelerProfileStyles'))return;var s=document.createElement('style');s.id='travelerProfileStyles';s.textContent='.traveler-profile{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:0 2px 12px}.traveler-profile__photo{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid #143a31;box-shadow:0 4px 14px rgba(20,58,49,.12);background:#fff}.traveler-profile__copy{text-align:right;line-height:1.15}.traveler-profile__hello{font-size:10px;color:#6f776f;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.traveler-profile__name{font-size:17px;font-weight:900;color:#17382f;margin-top:3px}.traveler-profile__button{display:flex;align-items:center;gap:10px;background:transparent;padding:0;border:0;border-radius:999px}.traveler-profile__button:focus-visible{outline:3px solid rgba(20,58,49,.18);outline-offset:4px}@media(max-width:390px){.traveler-profile__photo{width:48px;height:48px}.traveler-profile__name{font-size:16px}}';document.head.appendChild(s);}
   function getProfileMap(){return parse(localStorage.getItem(PROFILE_MAP_KEY)||'{}');}
   function saveProfile(uid,id){var m=getProfileMap();m[uid]=id;nativeSetItem(PROFILE_MAP_KEY,JSON.stringify(m));}
-  function inferProfile(user){
-    if(!user)return 'mehdi';
-    var m=getProfileMap();if(m[user.uid]&&PROFILES[m[user.uid]])return m[user.uid];
-    var text=((user.displayName||'')+' '+(user.email||'')).toLowerCase();
-    if(/faizeh|fayzeh|faezeh|fayze|faize/.test(text))return 'faizeh';
-    if(/mehdi|mehd|emamiqomi|archmeem|me\.em/.test(text))return 'mehdi';
-    return 'mehdi';
-  }
-  function renderTravelerProfile(user){
-    var dash=document.getElementById('dashboard');if(!dash)return;
-    ensureProfileStyles();
-    var id=inferProfile(user),p=PROFILES[id];
-    var box=document.getElementById('travelerProfile');
-    if(!box){
-      box=document.createElement('div');box.id='travelerProfile';box.className='traveler-profile';
-      dash.insertBefore(box,dash.firstChild);
-    }
-    box.innerHTML='<button type="button" class="traveler-profile__button" id="travelerProfileButton" aria-label="Current traveler: '+p.name+'" title="Tap to switch profile"><span class="traveler-profile__copy"><span class="traveler-profile__hello">Welcome</span><span class="traveler-profile__name">'+p.name+'</span></span><img class="traveler-profile__photo" src="'+p.photo+'" alt="'+p.name+' profile photo"></button>';
-    var btn=document.getElementById('travelerProfileButton');
-    if(btn)btn.onclick=function(){
-      var next=id==='mehdi'?'faizeh':'mehdi';
-      if(user&&user.uid)saveProfile(user.uid,next);
-      renderTravelerProfile(user);
-    };
-  }
-
+  function inferProfile(user){if(!user)return 'mehdi';var m=getProfileMap();if(m[user.uid]&&PROFILES[m[user.uid]])return m[user.uid];var text=((user.displayName||'')+' '+(user.email||'')).toLowerCase();if(/faezeh|faizeh|fayzeh|fayze|faize/.test(text))return 'faizeh';if(/mehdi|mehd|emamiqomi|archmeem|me\.em/.test(text))return 'mehdi';return 'mehdi';}
+  function renderTravelerProfile(user){var dash=document.getElementById('dashboard');if(!dash)return;ensureProfileStyles();var id=inferProfile(user),p=PROFILES[id];var box=document.getElementById('travelerProfile');if(!box){box=document.createElement('div');box.id='travelerProfile';box.className='traveler-profile';dash.insertBefore(box,dash.firstChild);}box.innerHTML='<button type="button" class="traveler-profile__button" id="travelerProfileButton" aria-label="Current traveler: '+p.name+'" title="Tap to switch profile"><span class="traveler-profile__copy"><span class="traveler-profile__hello">Welcome</span><span class="traveler-profile__name">'+p.name+'</span></span><img class="traveler-profile__photo" src="'+p.photo+'" alt="'+p.name+' profile photo"></button>';var btn=document.getElementById('travelerProfileButton');if(btn)btn.onclick=function(){var next=id==='mehdi'?'faizeh':'mehdi';if(user&&user.uid)saveProfile(user.uid,next);renderTravelerProfile(user);};}
   function stampLocalWrite(value){var prev=parse(localStorage.getItem(STATE_KEY)||'{}'),next=parse(value),meta=clone(prev.__syncMeta||{}),incoming=next.__syncMeta||{},k;for(k in incoming)if(Object.prototype.hasOwnProperty.call(incoming,k))meta[k]=incoming[k];var now=Date.now(),keys={};for(k in prev)if(k!=='__syncMeta')keys[k]=1;for(k in next)if(k!=='__syncMeta')keys[k]=1;for(k in keys)if(!same(prev[k],next[k]))meta[k]=now;next.__syncMeta=meta;return JSON.stringify(next);}
   localStorage.setItem=function(key,value){if(key!==STATE_KEY){nativeSetItem(key,value);return;}var stored=applyingCloudState?value:stampLocalWrite(value);nativeSetItem(key,stored);if(!applyingCloudState&&auth&&auth.currentUser&&stateRef)writeCloudState(stored).catch(function(){});};
   function mergeTripState(lv,cv){var local=parse(lv),cloud=parse(cv),merged={},meta={},keys={},k,lm=local.__syncMeta||{},cm=cloud.__syncMeta||{};for(k in local)if(k!=='__syncMeta')keys[k]=1;for(k in cloud)if(k!=='__syncMeta')keys[k]=1;for(k in keys){var l=local[k],c=cloud[k];if(typeof l==='undefined'){merged[k]=c;meta[k]=cm[k]||objectTime(c)||0;continue;}if(typeof c==='undefined'){merged[k]=l;meta[k]=lm[k]||objectTime(l)||0;continue;}var lt=objectTime(l)||Number(lm[k]||0),ct=objectTime(c)||Number(cm[k]||0);if(lt||ct){if(lt>ct){merged[k]=l;meta[k]=lt;}else{merged[k]=c;meta[k]=ct;}}else{merged[k]=c;meta[k]=0;}}merged.__syncMeta=meta;return JSON.stringify(merged);}
