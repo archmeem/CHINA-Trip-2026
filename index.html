@@ -7,9 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="China Trip" />
-  <title>China Trip 2026 — Booking Manager</title>
+  <title>China Trip 2026 — Daily Assistant</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="today.css" />
 </head>
 <body>
   <header class="topbar">
@@ -74,6 +75,7 @@
           <option value="not_open">Not open yet</option>
           <option value="booked">Booked</option>
           <option value="confirmed">Confirmed</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
       <div id="bookingList"></div>
@@ -141,7 +143,9 @@
   </dialog>
 
   <script src="data.js"></script>
+  <script src="plan-update.js"></script>
   <script src="app.js"></script>
+  <script src="today.js"></script>
   <script src="checklist.js"></script>
   <script src="sync.js"></script>
   <script>
