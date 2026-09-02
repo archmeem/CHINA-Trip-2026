@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="today.css" />
   <link rel="stylesheet" href="assistant-v3.css" />
+  <link rel="stylesheet" href="assistant-v4.css" />
   <link rel="stylesheet" href="profile-fix.css" />
 </head>
 <body>
@@ -24,7 +25,7 @@
     <section id="calendar" class="view"><div class="page-head"><div><div class="eyebrow">DEADLINES</div><h2>Booking Calendar</h2><p>Booking openings and travel/activity dates.</p></div></div><div id="calList"></div></section>
     <section id="checklist" class="view"><div id="checklistRoot"><div class="empty">Loading Travel Checklist…</div></div></section>
   </main>
-  <nav class="bottom-nav"><button data-v="dashboard" class="on"><b></b><span>Today</span></button><button data-v="timeline"><b></b><span>Trip</span></button><button data-v="tickets"><b></b><span>Tickets</span></button><button data-v="checklist"><b></b><span>Checklist</span></button><button data-v="more"><b></b><span>More</span></button></nav>
+  <nav class="bottom-nav"><button data-v="dashboard" class="on"><b></b><span>Today</span></button><button data-v="home"><b></b><span>Home</span></button><button data-v="timeline"><b></b><span>Trip</span></button><button data-v="tickets"><b></b><span>Tickets</span></button><button data-v="more"><b></b><span>More</span></button></nav>
   <dialog id="dlg"><form id="form"><div class="dialog-top"><div><div class="eyebrow" id="dcity"></div><h2 id="dname"></h2><div class="zh" id="dzh"></div></div><button class="close-btn" type="button" id="close" aria-label="Close">×</button></div><div class="quick-actions"><button type="button" class="quick primary" id="markBooked">Mark Booked</button><button type="button" class="quick" id="markConfirmed">Confirmed</button></div><div class="grid"><label>Status<select id="status"><option value="not_booked">Not booked</option><option value="booked">Booked</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select></label><label>Final price paid<input id="price" placeholder="e.g. ¥240" /></label><label>Booking platform<input id="platform" placeholder="12306 / official / Trip…" /></label><label>Confirmation / order #<input id="confirm" /></label><label>Seat / slot / room<input id="seat" /></label><label>Manual booking-open date<input id="openDate" type="date" /></label></div><label>Notes<textarea id="notes" rows="3"></textarea></label><label class="upload-card"><span><strong>Upload ticket / confirmation</strong><small>PDF, JPG, PNG or screenshot</small></span><input id="file" type="file" accept=".pdf,image/*" /></label><div class="actions"><button type="button" class="secondary" id="ics">Add Calendar Reminder</button><button class="primary">Save Changes</button></div></form></dialog>
   <script src="data.js"></script>
   <script src="plan-update.js"></script>
@@ -35,7 +36,7 @@
   <script src="checklist.js"></script>
   <script src="sync.js"></script>
   <script src="more-tools.js"></script>
-  <script src="assistant-v3.js"></script>
+  <script src="assistant-v4.js"></script>
   <script src="assistant-enhancements.js"></script>
   <script src="legacy-modern.js"></script>
   <script>setTimeout(function(){var root=document.getElementById('checklistRoot');if(root&&root.textContent.indexOf('Loading Travel Checklist')!==-1){root.innerHTML='<div class="empty">Travel Checklist could not initialize. Reload once; if this remains, the checklist script is not executing.</div>'; }},500);</script>
