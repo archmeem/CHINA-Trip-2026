@@ -1,5 +1,5 @@
-const CACHE='ct26-china-offline1';
-const SHELL=['./','./index.html','./styles.css','./data.js','./app.js','./checklist.js','./sync.js','./manifest.webmanifest','./icon.svg'];
+const CACHE='ct26-china-offline2';
+const SHELL=['./','./index.html','./styles.css','./today.css','./data.js','./plan-update.js','./app.js','./today.js','./checklist.js','./sync.js','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(
@@ -37,16 +37,13 @@ self.addEventListener('fetch',event=>{
 
   if(url.origin===self.location.origin){
     event.respondWith(
-      caches.match(req).then(cached=>{
-        if(cached)return cached;
-        return fetch(req).then(response=>{
-          if(response&&response.ok){
-            const copy=response.clone();
-            caches.open(CACHE).then(cache=>cache.put(req,copy));
-          }
-          return response;
-        });
-      })
+      fetch(req).then(response=>{
+        if(response&&response.ok){
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put(req,copy));
+        }
+        return response;
+      }).catch(()=>caches.match(req))
     );
   }
 });
