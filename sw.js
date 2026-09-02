@@ -1,5 +1,5 @@
-const CACHE='ct26-china-offline4';
-const SHELL=['./','./index.html','./styles.css','./today.css','./data.js','./plan-update.js','./plan-fix.js','./app.js','./today.js','./trip-fix.js','./checklist.js','./sync.js','./manifest.webmanifest','./icon.svg'];
+const CACHE='ct26-china-offline5';
+const SHELL=['./','./index.html','./styles.css','./today.css','./data.js','./plan-update.js','./plan-fix.js','./app.js','./stability-hotfix.js','./today.js','./trip-fix.js','./checklist.js','./sync.js','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(
