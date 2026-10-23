@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="China Trip" />
-  <title>China Trip 2026 — Daily Assistant</title>
+  <title>China Trip 2026 — Archive / Memories</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="today.css" />
@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="profile-fix.css" />
 </head>
 <body>
-  <header class="topbar"><div><div class="eyebrow">CHINA TRIP 2026</div><h1>China Trip Assistant</h1><p>Sep 5–21 · Offline-ready</p></div><div class="topmark">中国</div></header>
+  <header class="topbar"><div><div class="eyebrow">CHINA TRIP 2026</div><h1>China Trip Archive</h1><p>Sep 5–21 · Offline-ready</p></div><div class="topmark">中国</div></header>
   <main>
     <section id="dashboard" class="view active"><div class="hero"><div><div class="hero-label">TODAY · CHINA TIME</div><h2 id="today"></h2><p>See what opens today, what is still missing, and what comes next.</p></div><div class="countdown" id="countdown"></div></div><div class="progress-card"><div class="progress-head"><strong>Reservation progress</strong><span id="progressText">0%</span></div><div class="progress-track"><div id="progressBar"></div></div><div class="progress-foot"><span id="progressBooked">0 booked</span><span id="progressRemaining">0 remaining</span></div></div><div id="stats" class="stats"></div><div class="section-head"><div><h3>Book Today</h3><p>Booking windows already open and not completed.</p></div><span class="section-icon"></span></div><div id="bookToday"></div><div class="section-head"><div><h3>Opening Soon</h3><p>Your next reservation windows.</p></div></div><div id="soon"></div><div class="section-head"><div><h3>Missing Tickets</h3><p>Booked items without an uploaded ticket or confirmation.</p></div></div><div id="missingTickets"></div></section>
     <section id="timeline" class="view"><div class="page-head"><div><div class="eyebrow">FULL TRIP</div><h2>Trip Timeline</h2><p>English names with smaller Chinese labels.</p></div></div><div id="timelineList"></div></section>
@@ -37,9 +37,7 @@
   <script src="trip-fix.js"></script>
   <script src="checklist.js"></script>
   <script src="sync.js"></script>
-  <script src="more-tools.js"></script>
-  <script src="assistant-v4.js"></script>
-  <script src="assistant-enhancements.js"></script>
+  <script src="today.js"></script>
   <script src="legacy-modern.js"></script>
   <script src="art-v5.js"></script>
   <script>setTimeout(function(){var root=document.getElementById('checklistRoot');if(root&&root.textContent.indexOf('Loading Travel Checklist')!==-1){root.innerHTML='<div class="empty">Travel Checklist could not initialize. Reload once; if this remains, the checklist script is not executing.</div>'; }},500);</script>
