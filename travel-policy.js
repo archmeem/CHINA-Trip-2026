@@ -1,3 +1,5 @@
+// This completed trip is intentionally kept as a permanent archive.
+window.TRIP_ARCHIVE = true;
 (function(){
   'use strict';
   function apply(){
@@ -10,3 +12,4 @@
   apply();
   window.addEventListener('tripstatechange',apply);
 }());
+

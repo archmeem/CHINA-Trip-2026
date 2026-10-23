@@ -15,6 +15,7 @@ function ico(t){return({train:'🚆',flight:'✈️',attraction:'🏯',show:'�
 function status(i){
   let s=st(i.id).status;
   if(['booked','confirmed','cancelled'].includes(s)) return s;
+  if(window.TRIP_ARCHIVE) return 'Archived';
   if(!i.bookable) return 'info';
   let o=od(i),t=today();
   if(!o) return 'open';
@@ -31,16 +32,17 @@ function card(i,mini=false){
   let s=st(i.id),o=od(i),x=status(i),color=CITY_COLORS[i.city]||'#d9d2c6';
   const weather=i.weather?'<span class="pill blue">🌦 Weather</span>':'';
   const pass=i.passport?'<span class="pill">Passport</span>':'';
-  const openTag=o?`<span class="pill ${x==='open'?'red':x==='soon'?'amber':''}">${x==='open'?'Opened':`Opens ${pretty(o)}`}${x==='soon'?` · ${openCountdown(i)}`:''}</span>`:'';
+  const openTag=!window.TRIP_ARCHIVE&&o?`<span class="pill ${x==='open'?'red':x==='soon'?'amber':''}">${x==='open'?'Opened':`Opens ${pretty(o)}`}${x==='soon'?` · ${openCountdown(i)}`:''}</span>`:'';
   const ticket=s.fileName?`<span class="pill green">📎 Ticket attached</span>`:'';
   return `<div class="card" style="--city:${color}">
     <div class="cardtop"><div><div class="title">${ico(i.type)} ${i.name}</div><div class="zh">${i.nameZh||''}</div><div class="meta">Day ${i.day} · ${pretty(i.date)} · ${i.time}</div></div>${pill(x)}</div>
     <div class="pills"><span class="pill">${i.city} · ${i.cityZh}</span>${i.price?`<span class="pill">${i.price}</span>`:''}${openTag}${weather}${pass}${ticket}</div>
     ${mini?'':`<div class="muted">${s.notes||i.notes||''}</div>`}
-    ${i.bookable?`<div class="card-actions"><button class="${x==='open'&&!['booked','confirmed'].includes(s.status)?'primary':''} edit" data-id="${i.id}">${['booked','confirmed'].includes(s.status)?'Manage booking':'Manage / Mark booked'}</button></div>`:''}
+    ${i.bookable&&!window.TRIP_ARCHIVE?`<div class="card-actions"><button class="${x==='open'&&!['booked','confirmed'].includes(s.status)?'primary':''} edit" data-id="${i.id}">${['booked','confirmed'].includes(s.status)?'Manage booking':'Manage / Mark booked'}</button></div>`:''}
   </div>`;
 }
 function dash(){
+  if(window.TRIP_ARCHIVE) return;
   let t=today(); $('#today').textContent=pretty(t);
   let d=daysUntil('2026-09-05');
   $('#countdown').textContent=d>1?`${d} days\nto trip`:d===1?'Tomorrow\ntrip starts':d===0?'Trip starts\ntoday':'Trip\nunderway';
@@ -73,6 +75,7 @@ function timeline(){
   $('#timelineList').innerHTML=out;
 }
 function bookings(){
+  if(window.TRIP_ARCHIVE) return;
   let q=$('#q').value.toLowerCase(),c=$('#city').value,sf=$('#statusFilter').value;
   let a=ITINERARY.filter(i=>i.bookable&&(!c||i.city===c)&&(!sf||status(i)===sf)&&(!q||(i.name+' '+i.nameZh+' '+i.city+' '+i.cityZh).toLowerCase().includes(q)))
     .sort((x,y)=>x.date.localeCompare(y.date)||String(x.time).localeCompare(String(y.time)));
@@ -81,6 +84,7 @@ function bookings(){
 }
 function wireCards(){ $$('.edit').forEach(b=>b.onclick=()=>openDlg(b.dataset.id)); }
 function openDlg(id){
+  if(window.TRIP_ARCHIVE) return;
   cur=id;let i=ITINERARY.find(x=>x.id===id),s=st(id);
   $('#dcity').textContent=i.city+' · '+i.cityZh; $('#dname').textContent=i.name; $('#dzh').textContent=i.nameZh;
   $('#status').value=s.status||'not_booked'; $('#price').value=s.price||''; $('#platform').value=s.platform||''; $('#confirm').value=s.confirm||'';
@@ -91,21 +95,23 @@ async function put(id,f){let d=await odb();return new Promise((r,j)=>{let t=d.tr
 async function get(id){let d=await odb();return new Promise((r,j)=>{let q=d.transaction('f','readonly').objectStore('f').get(id);q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)})}
 async function tickets(){
   let a=ITINERARY.filter(i=>st(i.id).fileName).sort((x,y)=>x.date.localeCompare(y.date));
-  $('#ticketList').innerHTML=a.length?a.map(i=>`<div class="card ticket-card" style="--city:${CITY_COLORS[i.city]||'#d9d2c6'}"><div><div class="title">${ico(i.type)} ${i.name}</div><div class="zh">${i.nameZh}</div><div class="meta">${pretty(i.date)} · ${st(i.id).fileName}</div></div><button class="secondary view" data-id="${i.id}">View</button></div>`).join(''):'<div class="empty">No tickets uploaded yet. Add them from any booking card.</div>';
-  $$('.view').forEach(b=>b.onclick=async()=>{let f=await get(b.dataset.id);if(f)window.open(URL.createObjectURL(f),'_blank')});
+  $('#ticketList').innerHTML=a.length?a.map(i=>`<div class="card ticket-card" style="--city:${CITY_COLORS[i.city]||'#d9d2c6'}"><div><div class="title">${ico(i.type)} ${i.name}</div><div class="zh">${i.nameZh}</div><div class="meta">${pretty(i.date)} · ${st(i.id).fileName}</div></div><button class="secondary view" data-id="${i.id}">View</button></div>`).join(''):'<div class="empty">No documents saved on this device.</div>';
+  $$('#ticketList button.view').forEach(b=>b.onclick=async()=>{let f=await get(b.dataset.id);if(f)window.open(URL.createObjectURL(f),'_blank')});
 }
 function cal(){
+  if(window.TRIP_ARCHIVE) return;
   let e=[];ITINERARY.filter(i=>i.bookable).forEach(i=>{if(od(i))e.push([od(i),'open',i]);e.push([i.date,'travel',i])});e.sort((a,b)=>a[0].localeCompare(b[0]));let g={};e.forEach(x=>(g[x[0]]??=[]).push(x));
   $('#calList').innerHTML=Object.entries(g).map(([d,a])=>`<div class="calendar-day"><div class="calendar-date">${pretty(d)}</div>${a.map(x=>`<div class="calendar-entry"><div class="meta">${x[1]==='open'?'🔴 Booking opens':'🔵 Travel / activity'} — <strong>${x[2].name}</strong></div><div class="zh">${x[2].nameZh}</div></div>`).join('')}</div>`).join('');
 }
 function all(){dash();timeline();bookings();tickets();cal()}
 $('#form').onsubmit=async e=>{
-  e.preventDefault();let s=st(cur);s.status=$('#status').value;s.price=$('#price').value;s.platform=$('#platform').value;s.confirm=$('#confirm').value;s.seat=$('#seat').value;s.openDate=$('#openDate').value;s.notes=$('#notes').value;
+  e.preventDefault();if(window.TRIP_ARCHIVE)return;let s=st(cur);s.status=$('#status').value;s.price=$('#price').value;s.platform=$('#platform').value;s.confirm=$('#confirm').value;s.seat=$('#seat').value;s.openDate=$('#openDate').value;s.notes=$('#notes').value;
   let f=$('#file').files[0];if(f){await put(cur,f);s.fileName=f.name;s.fileType=f.type}s.updatedAt=new Date().toISOString();save();$('#dlg').close();all();
 };
 $('#close').onclick=()=>$('#dlg').close();
 $('#markBooked').onclick=()=>{$('#status').value='booked'}; $('#markConfirmed').onclick=()=>{$('#status').value='confirmed'};
 $('#ics').onclick=()=>{
+  if(window.TRIP_ARCHIVE)return;
   let i=ITINERARY.find(x=>x.id===cur),d=od(i);if(!d)return alert('Set a booking-open date first.');
   const ymd=d.replaceAll('-','');
   let txt=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//China Trip 2026//Booking Manager//EN\r\nBEGIN:VEVENT\r\nUID:${i.id}@china-trip-2026\r\nDTSTART;TZID=Asia/Shanghai:${ymd}T080000\r\nSUMMARY:BOOK TODAY — ${i.name}\r\nDESCRIPTION:${i.city} | Visit ${i.date} ${i.time} | ${i.notes||''}\r\nBEGIN:VALARM\r\nTRIGGER:-PT0M\r\nACTION:DISPLAY\r\nDESCRIPTION:Booking opens today — ${i.name}\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR`;
@@ -115,3 +121,4 @@ for(let c of [...new Set(ITINERARY.map(i=>i.city))]) $('#city').insertAdjacentHT
 $('#q').oninput=bookings; $('#city').onchange=bookings; $('#statusFilter').onchange=bookings;
 $$('.bottom-nav button').forEach(b=>b.onclick=()=>{$$('.bottom-nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');$$('.view').forEach(x=>x.classList.remove('active'));$('#'+b.dataset.v).classList.add('active');if(b.dataset.v==='tickets')tickets()});
 all();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+

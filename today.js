@@ -1,4 +1,26 @@
 (function(){
+if(window.TRIP_ARCHIVE){
+  function escapeArchive(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function archive(){
+    var dash=document.getElementById('dashboard');
+    var list=(window.ITINERARY||[]).filter(function(i){return i.active!==false;});
+    var dates=[...new Set(list.map(function(i){return i.date;}))].sort();
+    dash.innerHTML='<div class="page-head"><div><div class="eyebrow">ARCHIVE / MEMORIES</div><h2>China · Sep 5–21, 2026</h2><p>Browse the saved itinerary and notes. Planned activities are preserved as recorded; they are not a claim of attendance.</p></div></div><div class="filters"><label>Browse a day <select id="archiveDay">'+dates.map(function(d){var i=list.find(function(x){return x.date===d;});return '<option value="'+d+'">'+escapeArchive(d+' · '+i.city)+'</option>';}).join('')+'</select></label></div><div id="archiveEntries"></div>';
+    var select=document.getElementById('archiveDay');
+    function showDay(){document.getElementById('archiveEntries').innerHTML=list.filter(function(i){return i.date===select.value;}).map(function(i){return card(i);}).join('');}
+    select.onchange=showDay;showDay();
+  }
+  var nav=document.querySelector('.bottom-nav');
+  nav.innerHTML=[['dashboard','Memories'],['timeline','Itinerary'],['tickets','Documents'],['checklist','Checklist Archive']].map(function(x,k){return '<button data-v="'+x[0]+'" class="'+(k===0?'on':'')+'"><span>'+x[1]+'</span></button>';}).join('');
+  nav.querySelectorAll('button').forEach(function(b){b.onclick=function(){document.querySelectorAll('section.view').forEach(function(v){v.classList.toggle('active',v.id===b.dataset.v);});nav.querySelectorAll('button').forEach(function(n){n.classList.toggle('on',n===b);});if(b.dataset.v==='tickets')tickets();window.scrollTo(0,0);};});
+  document.querySelector('.topbar h1').textContent='China Trip Archive';
+  document.querySelector('.topbar p').textContent='Sep 5–21, 2026 · Archive / Memories';
+  ['bookings','calendar'].forEach(function(id){document.getElementById(id).hidden=true;});
+  document.querySelector('#tickets h2').textContent='Saved Documents';
+  document.querySelector('#timeline .page-head p').textContent='Archived itinerary and planning notes; optional and pending labels reflect the saved plan.';
+  archive();window.addEventListener('tripstatechange',archive);
+  return;
+}
 'use strict';
 var RUN_KEY='china-trip-2026-daily-state',TZ='Asia/Shanghai',idleTimer=null,ignoreScroll=false;
 var run={};try{run=JSON.parse(localStorage.getItem(RUN_KEY)||'{}');}catch(e){run={};}
